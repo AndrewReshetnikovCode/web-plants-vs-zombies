@@ -9,7 +9,7 @@ using namespace Sexy;
 
 namespace pvz::app {
 
-int RunLawnApp(platform::IFileSystem& fileSystem)
+int RunLawnApp(platform::IFileSystem& fileSystem, platform::IClock& clock, platform::IWindow& window, platform::IInput& input)
 {
     TodStringListSetColors(gLawnStringFormats, gLawnStringFormatCount);
     gGetCurrentLevelName = LawnGetCurrentLevelName;
@@ -17,9 +17,15 @@ int RunLawnApp(platform::IFileSystem& fileSystem)
     gAppHasUsedCheatKeys = LawnHasUsedCheatKeys;
     gExtractResourcesByName = Sexy::ExtractResourcesByName;
 
+    window.SetTitle("Plants vs. Zombies");
+    window.SetCursorVisible(true);
+    (void)input.IsKeyDown(0);
+
     gLawnApp = new LawnApp();
     gLawnApp->mChangeDirTo = (!fileSystem.Exists("properties\\resources.xml") && fileSystem.Exists("..\\properties\\resources.xml")) ? ".." : ".";
     gLawnApp->Init();
+    const std::uint64_t startupReadyMs = clock.NowMilliseconds();
+    (void)startupReadyMs;
     gLawnApp->Start();
     gLawnApp->Shutdown();
 
