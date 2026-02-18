@@ -67,7 +67,7 @@ Use these checklists as the source of truth and keep them updated in PRs.
 ### Phase 0 — Baseline and inventory
 
 - [x] Enumerate all WinAPI/DirectX usages (`windows.h`, `HWND`, `HINSTANCE`, `ddraw.h`, `d3d.h`).
-- [ ] Capture baseline run profile (startup, title screen, one level flow). Track in `docs/phase-0-runtime-baseline.md`.
+- [ ] Capture baseline run profile (startup, title screen, one level flow).
 - [x] Define acceptance metrics for parity (logic, rendering, audio, load times).
 
 **Milestone M0 (Done when):** audited dependency report + baseline behavior notes are committed under `docs/`.
