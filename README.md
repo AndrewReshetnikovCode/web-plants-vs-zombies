@@ -57,10 +57,9 @@ web-plants-vs-zombies/
 - ✅ Extracted startup sequence into `app/LawnAppRunner.cpp` and injected `IFileSystem` into startup path.
 - ✅ Restored startup seam wiring so `RunLawnApp(...)` now receives `IClock`, `IWindow`, and `IInput` from desktop adapters via shared entry dispatch.
 - ✅ Added startup-ready timing log marker in `RunLawnApp(...)` via `IClock::NowMilliseconds()` + `TodTraceAndLog(...)`.
-- ✅ Added wrapped validation commands for the migration loop (`validate_slice.sh`, `build_lanes.sh`).
+- ✅ Added validation skill set for WinAPI budget/baseline/build-lane/phase-tracker checks plus wrapped validation commands (`validate_slice.sh`, `build_lanes.sh`).
 - ✅ Routed startup window size and fullscreen handoff through `IWindow` in `RunLawnApp(...)` (while keeping gameplay windowing unchanged).
 - ✅ Added `tools/validation/window_seam_guard.py` and wired it into wrapped validation lanes.
-- ✅ Replaced startup no-op input seam with concrete `IInput` touchpoint logging and added `tools/validation/input_seam_guard.py` to wrapped validation lanes.
 
 
 ## Migration tracker (phases + milestones)
@@ -131,8 +130,8 @@ Use these checklists as the source of truth and keep them updated in PRs.
 Track this list while working through Phases 1–3:
 
 - [x] Entry point: replace Win32-only `WinMain` assumptions with portable runner contract.
-- [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`. (Partial: startup path now routes title/cursor and startup size/fullscreen handoff via `IWindow`.)
-- [ ] Input: move keyboard/mouse routing behind `IInput`. (Partial: startup path now records a marker via `IsMouseButtonDown/GetMouseX/GetMouseY`.)
+- [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`.
+- [ ] Input: move keyboard/mouse routing behind `IInput`.
 - [ ] Timing: replace platform timing calls with `IClock`.
 - [ ] Filesystem: standardize reads via `IFileSystem` for desktop + browser packaged assets.
 - [ ] Audio: remove `HWND`/Win-specific coupling from gameplay-facing audio API.
