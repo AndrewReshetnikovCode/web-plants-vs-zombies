@@ -55,6 +55,7 @@ web-plants-vs-zombies/
 ...
 - ✅ Added runtime baseline capture template: `docs/phase-0-runtime-baseline.md`.
 - ✅ Extracted startup sequence into `app/LawnAppRunner.cpp` and injected `IFileSystem` into startup path.
+- ✅ Restored startup seam wiring so `RunLawnApp(...)` now receives `IClock`, `IWindow`, and `IInput` from desktop adapters via shared entry dispatch.
 
 
 ## Migration tracker (phases + milestones)
@@ -124,7 +125,7 @@ Use these checklists as the source of truth and keep them updated in PRs.
 
 Track this list while working through Phases 1–3:
 
-- [ ] Entry point: replace Win32-only `WinMain` assumptions with portable runner contract.
+- [x] Entry point: replace Win32-only `WinMain` assumptions with portable runner contract.
 - [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`.
 - [ ] Input: move keyboard/mouse routing behind `IInput`.
 - [ ] Timing: replace platform timing calls with `IClock`.
