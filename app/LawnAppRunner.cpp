@@ -9,10 +9,8 @@ using namespace Sexy;
 
 namespace pvz::app {
 
-int RunLawnApp(platform::IFileSystem& fileSystem, platform::IClock& clock)
+int RunLawnApp(platform::IFileSystem& fileSystem)
 {
-    const auto startupBeginMs = clock.NowMilliseconds();
-
     TodStringListSetColors(gLawnStringFormats, gLawnStringFormatCount);
     gGetCurrentLevelName = LawnGetCurrentLevelName;
     gAppCloseRequest = LawnGetCloseRequest;
@@ -22,11 +20,6 @@ int RunLawnApp(platform::IFileSystem& fileSystem, platform::IClock& clock)
     gLawnApp = new LawnApp();
     gLawnApp->mChangeDirTo = (!fileSystem.Exists("properties\\resources.xml") && fileSystem.Exists("..\\properties\\resources.xml")) ? ".." : ".";
     gLawnApp->Init();
-
-    // Keep this marker for later baseline logging integration in Phase 0 runtime capture.
-    const auto startupReadyMs = clock.NowMilliseconds() - startupBeginMs;
-    (void)startupReadyMs;
-
     gLawnApp->Start();
     gLawnApp->Shutdown();
 
