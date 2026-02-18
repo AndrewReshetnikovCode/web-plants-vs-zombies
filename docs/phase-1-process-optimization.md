@@ -2,22 +2,24 @@
 
 ## Applied optimization
 
-A repository-local skill was added to enforce small vertical-slice PR workflow:
-
-- Skill: `skills/pvz-migration-slice/SKILL.md`
-- Progress script: `skills/pvz-migration-slice/scripts/phase_progress.py`
-- Validation wrapper: `tools/validation/phase_progress.sh`
+Use one small vertical slice per PR and keep a fixed Definition of Done.
 
 ## Enforced per-slice DoD
 
-- single seam per PR,
-- doc update,
-- checklist update,
+- single seam-focused code change,
+- docs/checklist update,
 - reproducible validation artifacts.
 
-## Immediate usage
+## Core command wrappers
 
-Run:
+- `tools/validation/validate_slice.sh`
+  - startup seam guard
+  - window seam guard
+  - input seam guard
+  - WinAPI inventory
+  - phase progress snapshot
+- `tools/validation/build_lanes.sh`
+  - quick validation lane (always)
+  - optional full build lane (`RUN_FULL_BUILD=1`)
 
-- `tools/validation/winapi_inventory.sh`
-- `tools/validation/phase_progress.sh`
+This keeps the migration loop fast while preserving minimum safety checks.
