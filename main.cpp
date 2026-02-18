@@ -4,9 +4,6 @@
 #include "app/LawnAppRunner.h"
 #include "app/LawnGlobals.h"
 #include "platform/desktop/DesktopFileSystemAdapter.h"
-#include "platform/desktop/DesktopClockAdapter.h"
-#include "platform/desktop/DesktopWindowAdapter.h"
-#include "platform/desktop/DesktopInputAdapter.h"
 
 using namespace Sexy;
 
@@ -18,10 +15,7 @@ namespace {
 int RunDesktopEntry()
 {
     pvz::platform::desktop::DesktopFileSystemAdapter fileSystem;
-    pvz::platform::desktop::DesktopClockAdapter clock;
-    pvz::platform::desktop::DesktopWindowAdapter window(800, 600);
-    pvz::platform::desktop::DesktopInputAdapter input;
-    return pvz::app::RunLawnApp(fileSystem, clock, window, input);
+    return pvz::app::RunLawnApp(fileSystem);
 }
 } // namespace
 
@@ -29,11 +23,6 @@ int RunDesktopEntry()
 #if defined(_WIN32)
 int WINAPI WinMain(_In_ HINSTANCE /* hInstance */, _In_opt_ HINSTANCE /* hPrevInstance */, _In_ LPSTR /* lpCmdLine */, _In_ int /* nCmdShow */)
 {
-    return RunDesktopEntry();
-}
-#else
-int main(int /*argc*/, char** /*argv*/)
-{
-    return RunDesktopEntry();
-}
-#endif
+	pvz::platform::desktop::DesktopFileSystemAdapter fileSystem;
+	return pvz::app::RunLawnApp(fileSystem);
+};
