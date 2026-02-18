@@ -1,95 +1,153 @@
+# web-plants-vs-zombies
 
-# re-plants-vs-zombies
+This repository starts from the existing PvZ decompilation/modernization codebase and tracks the migration path toward a browser-playable web version.
 
-A project focused on decompiling the latest functionality from the first PvZ title and expand upon the game and its engine
+## Mission
 
-The SexyAppFramework dating as back as 2005 is a very old game engine and it does not follow proper C++ conventions as per modern standards nor does it use a modern renderer backend
+Build a browser-playable PvZ runtime by introducing platform abstractions, reducing WinAPI coupling, and adding a dedicated web build pipeline while preserving gameplay parity.
 
-This project aims to modernize the engine by using features from the latest C++ standards aswell as replacing the old legacy DirectDraw and Direct3D7 renderers for the modern [GLFW](https://www.glfw.org/) cross-platform wrapper aswell as expanding upon an old (now deleted) decompilation project of PvZ version 0.9.9 by [Miya aka Kopie](https://github.com/rspforhp) to get the best possible PvZ experience both for modders and players alike
+## Repository scaffold (web migration)
 
-# DISCLAIMER
+```text
+web-plants-vs-zombies/
+├─ app/                         # app entrypoints and bootstrap glue
+├─ assets/
+│  ├─ manifests/                # generated resource manifests
+│  ├─ processed/                # converted/packed assets for runtime
+│  └─ raw/                      # source assets (policy-dependent)
+├─ audio/
+│  ├─ common/                   # backend-agnostic audio layer
+│  ├─ desktop/                  # native desktop audio backend
+│  └─ webaudio/                 # browser audio backend
+├─ cmake/                       # target/toolchain split (desktop/web)
+├─ docs/                        # migration notes, reports, decisions
+├─ engine/
+│  ├─ core/                     # loop/timing/application services
+│  ├─ gameplay/                 # extracted game rules and systems
+│  ├─ math/                     # shared math helpers
+│  ├─ resources/                # resource loading/group orchestration
+│  └─ serialization/            # save/load and data formats
+├─ platform/
+│  ├─ desktop/                  # desktop platform adapters
+│  ├─ interfaces/               # IWindow, IInput, IAudio, etc.
+│  └─ web/                      # web/emscripten adapters
+├─ render/
+│  ├─ common/                   # renderer-agnostic draw command API
+│  ├─ desktop_gl/               # desktop OpenGL compatibility backend
+│  └─ webgl/                    # browser rendering backend
+├─ tests/
+│  ├─ gameplay/                 # deterministic simulation checks
+│  ├─ golden/                   # visual parity snapshots
+│  └─ unit/                     # isolated module tests
+├─ third_party/                 # external deps/vendor sources
+├─ tools/
+│  ├─ asset_packer/             # packaging/compression scripts
+│  ├─ resource_manifest_gen/    # resource manifest generation
+│  └─ validation/               # build/runtime validation scripts
+└─ web/
+   ├─ public/                   # static files served with web build
+   ├─ scripts/                  # web build/start scripts
+   └─ shell/                    # index.html/bootstrap shell
+```
 
-This project does not condone piracy
+## Current status
 
-This project does not include any IP from PopCap outside of their open source game engine, this will only output the executable for a decompiled, fan version of PvZ
+- ✅ Initial migration tree folders are present.
+- ✅ First platform interface headers are added in `platform/interfaces`.
+- ✅ Desktop no-op adapters are added to unblock wiring in Phase 1.
+- ✅ Web shell and web CMake placeholders are added.
+- ✅ Phase 0 dependency inventory and baseline metric definitions are documented in `docs/phase-0-baseline.md`.
 
-To play the game using this project you need to have access to the original game files by [purchasing it](https://store.steampowered.com/app/3590/Plants_vs_Zombies_GOTY_Edition/)
+## Migration tracker (phases + milestones)
 
-## Roadmap
+Use these checklists as the source of truth and keep them updated in PRs.
 
-#### Currently focused on
-- [x] Add x64 support for the base game **(Partial)**
-- [ ] Replace the old renderer backend for GLFW **(WIP)**
-- [ ] Replace all Windows only code for cross-platform GLFW counterparts **(WIP)**
+### Phase 0 — Baseline and inventory
 
-#### Left for when we have a working x64 build using GLFW
-- [ ] Add all functionality from the GOTY version of the game
-  - [x] Achievements **(Partial)**
-  - [ ] Zombatar
+- [x] Enumerate all WinAPI/DirectX usages (`windows.h`, `HWND`, `HINSTANCE`, `ddraw.h`, `d3d.h`).
+- [ ] Capture baseline run profile (startup, title screen, one level flow).
+- [x] Define acceptance metrics for parity (logic, rendering, audio, load times).
 
-#### Possible future features
-- [ ] Create an easy to use modding API for the game
-  - [ ] Parse zombies from files
-  - [ ] Parse plants from files
-  - [ ] Parse maps from files
-  - [ ] Add scripting for custom sequences
+**Milestone M0 (Done when):** audited dependency report + baseline behavior notes are committed under `docs/`.
 
-## Installation
+### Phase 1 — Platform abstraction (WinAPI migration start)
 
-### Visual Studio Community
+- [x] Create interface contracts in `platform/interfaces` (`IWindow`, `IInput`, `IClock`, `IFileSystem`, `IAudio`).
+- [x] Add initial desktop implementations in `platform/desktop` for incremental integration.
+- [ ] Replace direct WinAPI calls in migrated pathways with interface calls.
+- [ ] Keep desktop behavior functional through the new adapters.
 
-Open the folder containing the `CMakeSettings.json`, wait until cache finishes generating and build the project
+**Milestone M1 (Done when):** startup + selected gameplay paths compile and run without direct WinAPI usage in migrated modules.
 
-### Other (Sublime, Visual Studio Code, etc..)
+### Phase 2 — Rendering migration
 
-Run the following commands (assuming you have CMake installed with Ninja) where the `CMakeSettings.json` file is located
+- [ ] Define render command surface in `render/common`.
+- [ ] Add desktop parity backend in `render/desktop_gl`.
+- [ ] Add browser backend in `render/webgl`.
+- [ ] Validate visual output for title + one gameplay scene.
 
-`cmake -G Ninja -B cmake-build`
+**Milestone M2 (Done when):** same scene renders in desktop/web pipelines with acceptable parity.
 
-`cmake --build cmake-build`
+### Phase 3 — Audio migration
 
-If running these commands does not create a successful build please [create an issue](https://github.com/Patoke/re-plants-vs-zombies/issue) and detail your problem
+- [ ] Route sound/music requests through `IAudio`.
+- [ ] Preserve desktop backend behavior.
+- [ ] Implement `audio/webaudio` backend.
+- [ ] Add browser autoplay-unlock flow after user interaction.
 
-After you build, the output executable should be in the `Debug` or `Release` (depending on your build target) folder inside `SexyAppFramework`
+**Milestone M3 (Done when):** browser build plays core music + SFX reliably.
 
-Then you want to copy that executable inside of the original game's root folder (or copy the contents of the original game folder inside the previously mentioned folder)
+### Phase 4 — Resource pipeline and loading groups
 
-After that you should be able to just open the built executable and enjoy re-pvz!
+- [ ] Implement manifest generator in `tools/resource_manifest_gen`.
+- [ ] Preserve grouped loading semantics (`Init`, `DelayLoad_*`, etc.).
+- [ ] Introduce web preload/lazy-load strategy for memory control.
 
-## Contributing
+**Milestone M4 (Done when):** resource groups load deterministically in browser build.
 
-When contributing please follow the following guides:
+### Phase 5 — Build targets and CI
 
-<details><summary>SexyAppFramework coding philosophy</summary>
+- [ ] Split desktop/web CMake target configuration under `cmake/`.
+- [ ] Add local web run command/script in `web/scripts`.
+- [ ] Add CI job that builds publishable web artifacts.
 
-#### From the SexyAppFramework docs:
+**Milestone M5 (Done when):** CI outputs runnable `index.html + .js + .wasm` artifact set.
 
-<br>
-The framework differs from many other APIs in that some class properties are not wrapped in accessor methods, but rather are made to be accessed directly through public member data.   The window caption of your application, for example, is set by assigning a value to the std::string mTitle in the application object before the application’s window is created.  We felt that in many cases this reduced the code required to implement a class.  Also of note is the prefix notation used on variables: “m” denotes a class member, “the” denotes a parameter passed to a method or function, and “a” denotes a local variable.
-</br>
-</details>
+### Phase 6 — Gameplay parity and optimization
 
-<details><summary>Contributor markings</summary>
+- [ ] Add deterministic gameplay checks in `tests/gameplay`.
+- [ ] Add golden visual comparisons in `tests/golden`.
+- [ ] Track performance budgets (frame time, memory, load time).
 
-<br>
-Whenever you need to leave a comment for other developers to find you should do so with the following grammar:
+**Milestone M6 (Done when):** at least one full level is browser-playable with acceptable parity/performance.
 
-* Always include the name of the contributor as in:
-  * `@Contributor`
-* For todos include the todo marking as in:
-  * `@Contributor todo`
-* Always add a colon to specify that the start of the comment starts there
-  * `@Contributor todo: Thing went wrong!`
-* If a new function has been reversed and you have found the address in the latest version of the game (or have reversed a certain class member offset) please note it as follows:
-  * `@Contributor GOTY: 0xADDRESS`
-</br>
-</details>
+## WinAPI migration checklist (operational)
 
+Track this list while working through Phases 1–3:
 
-## Thanks to
+- [ ] Entry point: replace Win32-only `WinMain` assumptions with portable runner contract.
+- [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`.
+- [ ] Input: move keyboard/mouse routing behind `IInput`.
+- [ ] Timing: replace platform timing calls with `IClock`.
+- [ ] Filesystem: standardize reads via `IFileSystem` for desktop + browser packaged assets.
+- [ ] Audio: remove `HWND`/Win-specific coupling from gameplay-facing audio API.
+- [ ] Render: eliminate direct DDraw/D3D dependencies from gameplay-side codepaths.
+- [ ] Build: isolate Windows-only links/defines to desktop target only.
 
-- [@rspforhp](https://www.github.com/octokatherine) for their amazing work decompiling the 0.9.9 version of PvZ
-- [@ruslan831](https://github.com/ruslan831) for archiving the [0.9.9 decompilation of PvZ](https://github.com/ruslan831/PlantsVsZombies-decompilation)
-- The GLFW team for their amazing work
-- PopCap for creating the amazing PvZ franchise (and making their game engine public)
-- All the contributors which have worked or are actively working in this amazing project
+## Legal / asset note
+
+This project does not include proprietary PopCap game assets. You must own the original game files and provide assets locally for runtime/testing.
+
+## Prioritized suggestions (current relevance)
+
+Decision: execute **all** of the following, in this order.
+
+1. **Complete remaining Phase 0 runtime baseline capture**
+   Record startup/title/one-level baseline notes so migration regressions can be measured objectively.
+2. **Migrate a narrow startup slice first (entrypoint + clock + window shell)**
+   Keep gameplay untouched while proving interface wiring in one safe path.
+3. **Target highest WinAPI hotspot early (`SexyAppFramework/SexyAppBase.cpp`)**
+   Reduce `HWND` coupling where it is currently most concentrated.
+4. **Add lightweight adapter validation as wiring proceeds**
+   Add small compile/runtime checks per adapter to avoid dead abstractions.
+
