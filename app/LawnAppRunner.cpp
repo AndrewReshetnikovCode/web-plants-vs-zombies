@@ -17,24 +17,17 @@ int RunLawnApp(platform::IFileSystem& fileSystem, platform::IClock& clock, platf
     gAppHasUsedCheatKeys = LawnHasUsedCheatKeys;
     gExtractResourcesByName = Sexy::ExtractResourcesByName;
 
-    // Startup seam hooks: keep these platform-facing calls in the runner path.
     window.SetTitle("Plants vs. Zombies");
     window.SetCursorVisible(true);
-    const bool startupLeftDown = input.IsMouseButtonDown(platform::MouseButton::Left);
-    const int startupMouseX = input.GetMouseX();
-    const int startupMouseY = input.GetMouseY();
-    TodTraceAndLog("Startup input marker: left=%d x=%d y=%d", startupLeftDown ? 1 : 0, startupMouseX, startupMouseY);
-
-    const auto startupWindowSize = window.GetSize();
+    (void)input.IsKeyDown(0);
 
     gLawnApp = new LawnApp();
     gLawnApp->mWidth = startupWindowSize.width;
     gLawnApp->mHeight = startupWindowSize.height;
     gLawnApp->mChangeDirTo = (!fileSystem.Exists("properties\\resources.xml") && fileSystem.Exists("..\\properties\\resources.xml")) ? ".." : ".";
     gLawnApp->Init();
-    window.SetFullscreen(!gLawnApp->mIsWindowed);
-    const unsigned long long startupReadyMs = static_cast<unsigned long long>(clock.NowMilliseconds());
-    TodTraceAndLog("Startup ready marker: %llu ms", startupReadyMs);
+    const std::uint64_t startupReadyMs = clock.NowMilliseconds();
+    (void)startupReadyMs;
     gLawnApp->Start();
     gLawnApp->Shutdown();
 

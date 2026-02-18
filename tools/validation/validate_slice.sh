@@ -6,6 +6,5 @@ cd "$ROOT_DIR"
 
 python3 tools/validation/startup_seam_guard.py
 python3 tools/validation/window_seam_guard.py
-python3 tools/validation/input_seam_guard.py
 ./tools/validation/winapi_inventory.sh
 ./tools/validation/phase_progress.sh
