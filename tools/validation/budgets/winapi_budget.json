@@ -1,0 +1,8 @@
+{
+  "d3d_h_includes": 4,
+  "ddraw_h_includes": 4,
+  "hinstance_usages": 8,
+  "hwnd_usages": 94,
+  "windows_h_includes": 13,
+  "winmain_usages": 1
+}
