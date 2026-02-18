@@ -52,13 +52,10 @@ web-plants-vs-zombies/
 
 ## Current status
 
-- ✅ Initial migration tree folders are present.
-- ✅ First platform interface headers are added in `platform/interfaces`.
-- ✅ Desktop no-op adapters are added to unblock wiring in Phase 1.
-- ✅ Web shell and web CMake placeholders are added.
-- ✅ Phase 0 dependency inventory and baseline metric definitions are documented in `docs/phase-0-baseline.md`.
-- ✅ Added repeatable inventory script: `tools/validation/winapi_inventory.sh`.
+...
 - ✅ Added runtime baseline capture template: `docs/phase-0-runtime-baseline.md`.
+- ✅ Extracted startup sequence into `app/LawnAppRunner.cpp` and injected `IFileSystem` into startup path.
+
 
 ## Migration tracker (phases + milestones)
 
