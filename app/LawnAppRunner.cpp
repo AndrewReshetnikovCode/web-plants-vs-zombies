@@ -22,6 +22,8 @@ int RunLawnApp(platform::IFileSystem& fileSystem, platform::IClock& clock, platf
     (void)input.IsKeyDown(0);
 
     gLawnApp = new LawnApp();
+    gLawnApp->mWidth = startupWindowSize.width;
+    gLawnApp->mHeight = startupWindowSize.height;
     gLawnApp->mChangeDirTo = (!fileSystem.Exists("properties\\resources.xml") && fileSystem.Exists("..\\properties\\resources.xml")) ? ".." : ".";
     gLawnApp->Init();
     const std::uint64_t startupReadyMs = clock.NowMilliseconds();

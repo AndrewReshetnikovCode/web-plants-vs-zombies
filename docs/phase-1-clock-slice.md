@@ -16,3 +16,9 @@
 
 - Expose startup timing marker to baseline docs/log collection workflow.
 - Begin routing selected input/window startup interactions through interfaces.
+
+
+## Follow-up update
+
+- Startup ready marker is now emitted through `TodTraceAndLog(...)` in `RunLawnApp(...)` using `IClock::NowMilliseconds()`.
+- This keeps startup timing collection on the platform abstraction seam and makes baseline capture reproducible from logs.

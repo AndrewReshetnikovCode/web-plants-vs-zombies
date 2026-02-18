@@ -56,6 +56,13 @@ web-plants-vs-zombies/
 - ✅ Added runtime baseline capture template: `docs/phase-0-runtime-baseline.md`.
 - ✅ Extracted startup sequence into `app/LawnAppRunner.cpp` and injected `IFileSystem` into startup path.
 - ✅ Restored startup seam wiring so `RunLawnApp(...)` now receives `IClock`, `IWindow`, and `IInput` from desktop adapters via shared entry dispatch.
+<<<<<<< codex/analyze-project-requirements-and-skills
+- ✅ Added startup-ready timing log marker in `RunLawnApp(...)` via `IClock::NowMilliseconds()` + `TodTraceAndLog(...)`.
+- ✅ Added validation skill set for WinAPI budget/baseline/build-lane/phase-tracker checks plus wrapped validation commands (`validate_slice.sh`, `build_lanes.sh`).
+- ✅ Routed startup window size and fullscreen handoff through `IWindow` in `RunLawnApp(...)` (while keeping gameplay windowing unchanged).
+- ✅ Added `tools/validation/window_seam_guard.py` and wired it into wrapped validation lanes.
+=======
+>>>>>>> main
 
 
 ## Migration tracker (phases + milestones)
@@ -126,7 +133,11 @@ Use these checklists as the source of truth and keep them updated in PRs.
 Track this list while working through Phases 1–3:
 
 - [x] Entry point: replace Win32-only `WinMain` assumptions with portable runner contract.
+<<<<<<< codex/analyze-project-requirements-and-skills
+- [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`. (Partial: startup path now routes title/cursor and startup size/fullscreen handoff via `IWindow`.)
+=======
 - [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`.
+>>>>>>> main
 - [ ] Input: move keyboard/mouse routing behind `IInput`.
 - [ ] Timing: replace platform timing calls with `IClock`.
 - [ ] Filesystem: standardize reads via `IFileSystem` for desktop + browser packaged assets.
