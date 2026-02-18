@@ -52,15 +52,10 @@ web-plants-vs-zombies/
 
 ## Current status
 
-- ✅ Initial migration tree folders are present.
-- ✅ First platform interface headers are added in `platform/interfaces`.
-- ✅ Desktop no-op adapters are added to unblock wiring in Phase 1.
-- ✅ Web shell and web CMake placeholders are added.
-- ✅ Phase 0 dependency inventory and baseline metric definitions are documented in `docs/phase-0-baseline.md`.
-- ✅ Added repeatable inventory script: `tools/validation/winapi_inventory.sh`.
+...
 - ✅ Added runtime baseline capture template: `docs/phase-0-runtime-baseline.md`.
 - ✅ Extracted startup sequence into `app/LawnAppRunner.cpp` and injected `IFileSystem` into startup path.
-- ✅ Added entrypoint bridge in `main.cpp` (WinMain + fallback `main`) that reuses one startup dispatcher.
+
 
 ## Migration tracker (phases + milestones)
 
@@ -69,7 +64,7 @@ Use these checklists as the source of truth and keep them updated in PRs.
 ### Phase 0 — Baseline and inventory
 
 - [x] Enumerate all WinAPI/DirectX usages (`windows.h`, `HWND`, `HINSTANCE`, `ddraw.h`, `d3d.h`).
-- [ ] Capture baseline run profile (startup, title screen, one level flow). Track in `docs/phase-0-runtime-baseline.md`.
+- [ ] Capture baseline run profile (startup, title screen, one level flow).
 - [x] Define acceptance metrics for parity (logic, rendering, audio, load times).
 
 **Milestone M0 (Done when):** audited dependency report + baseline behavior notes are committed under `docs/`.
@@ -78,7 +73,7 @@ Use these checklists as the source of truth and keep them updated in PRs.
 
 - [x] Create interface contracts in `platform/interfaces` (`IWindow`, `IInput`, `IClock`, `IFileSystem`, `IAudio`).
 - [x] Add initial desktop implementations in `platform/desktop` for incremental integration.
-- [ ] Replace direct WinAPI calls in migrated pathways with interface calls. (Partial: startup path routes resource probe via `IFileSystem`, and entry wiring is no longer `WinMain`-only.)
+- [ ] Replace direct WinAPI calls in migrated pathways with interface calls.
 - [ ] Keep desktop behavior functional through the new adapters.
 
 **Milestone M1 (Done when):** startup + selected gameplay paths compile and run without direct WinAPI usage in migrated modules.

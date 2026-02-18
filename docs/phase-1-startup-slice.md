@@ -12,5 +12,5 @@ This slice extracts the startup sequence from `WinMain` into `app/LawnAppRunner.
 
 ## Next wiring step
 
-- Continue replacing direct WinAPI touchpoints in startup-adjacent modules after entry abstraction.
-- Wire clock/input/window interfaces into the same startup runner incrementally.
+- Keep `WinMain` as a thin shell.
+- Introduce a non-Win32 entrypoint wrapper that calls the same `RunLawnApp(...)` function.
