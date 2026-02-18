@@ -55,6 +55,13 @@ web-plants-vs-zombies/
 ...
 - ✅ Added runtime baseline capture template: `docs/phase-0-runtime-baseline.md`.
 - ✅ Extracted startup sequence into `app/LawnAppRunner.cpp` and injected `IFileSystem` into startup path.
+- ✅ Restored startup seam wiring so `RunLawnApp(...)` now receives `IClock`, `IWindow`, and `IInput` from desktop adapters via shared entry dispatch.
+- ✅ Added startup-ready timing log marker in `RunLawnApp(...)` via `IClock::NowMilliseconds()` + `TodTraceAndLog(...)`.
+- ✅ Added wrapped validation commands for the migration loop (`validate_slice.sh`, `build_lanes.sh`).
+- ✅ Routed startup window size and fullscreen handoff through `IWindow` in `RunLawnApp(...)` (while keeping gameplay windowing unchanged).
+- ✅ Added `tools/validation/window_seam_guard.py` and wired it into wrapped validation lanes.
+- ✅ Replaced startup no-op input seam with concrete `IInput` touchpoint logging and added `tools/validation/input_seam_guard.py` to wrapped validation lanes.
+- ✅ Added startup timing/lifecycle validation guards (`clock_seam_guard.py`, `runner_lifecycle_guard.py`) and wired them into wrapped validation lanes.
 
 
 ## Migration tracker (phases + milestones)
@@ -124,10 +131,10 @@ Use these checklists as the source of truth and keep them updated in PRs.
 
 Track this list while working through Phases 1–3:
 
-- [ ] Entry point: replace Win32-only `WinMain` assumptions with portable runner contract.
-- [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`.
-- [ ] Input: move keyboard/mouse routing behind `IInput`.
-- [ ] Timing: replace platform timing calls with `IClock`.
+- [x] Entry point: replace Win32-only `WinMain` assumptions with portable runner contract.
+- [ ] Windowing: move window creation/mode/cursor handling behind `IWindow`. (Partial: startup path now routes title/cursor and startup size/fullscreen handoff via `IWindow`.)
+- [ ] Input: move keyboard/mouse routing behind `IInput`. (Partial: startup path now records a marker via `IsMouseButtonDown/GetMouseX/GetMouseY`.)
+- [ ] Timing: replace platform timing calls with `IClock`. (Partial: startup/shutdown timing markers now route through `IClock`.)
 - [ ] Filesystem: standardize reads via `IFileSystem` for desktop + browser packaged assets.
 - [ ] Audio: remove `HWND`/Win-specific coupling from gameplay-facing audio API.
 - [ ] Render: eliminate direct DDraw/D3D dependencies from gameplay-side codepaths.
@@ -137,16 +144,4 @@ Track this list while working through Phases 1–3:
 
 This project does not include proprietary PopCap game assets. You must own the original game files and provide assets locally for runtime/testing.
 
-## Prioritized suggestions (current relevance)
-
-Decision: execute **all** of the following, in this order.
-
-1. **Complete remaining Phase 0 runtime baseline capture**
-   Record startup/title/one-level baseline notes so migration regressions can be measured objectively.
-2. **Migrate a narrow startup slice first (entrypoint + clock + window shell)**
-   Keep gameplay untouched while proving interface wiring in one safe path.
-3. **Target highest WinAPI hotspot early (`SexyAppFramework/SexyAppBase.cpp`)**
-   Reduce `HWND` coupling where it is currently most concentrated.
-4. **Add lightweight adapter validation as wiring proceeds**
-   Add small compile/runtime checks per adapter to avoid dead abstractions.
 

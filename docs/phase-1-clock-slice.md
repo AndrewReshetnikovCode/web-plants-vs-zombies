@@ -4,15 +4,24 @@
 
 - Extended `RunLawnApp(...)` to accept `platform::IClock&` in addition to `platform::IFileSystem&`.
 - Wired `DesktopClockAdapter` from `main.cpp` into the shared startup dispatcher path.
-- Added a startup-ready timing marker (`startupReadyMs`) after `LawnApp::Init()` for future runtime-baseline logging.
+- Added startup and lifecycle timing markers in startup runner:
+  - `startupBeginMs` sampled before startup platform hooks,
+  - `startupReadyMs` sampled after `LawnApp::Init()`,
+  - `startupDeltaMs` derived as guarded `startupReadyMs - startupBeginMs`,
+  - `shutdownDoneMs` sampled after app shutdown.
+- Emitted logs through the seam only (`TodTraceAndLog(...)` with values from `IClock::NowMilliseconds()`).
 
 ## Why this matters
 
-- Moves startup timing dependency behind the platform abstraction layer.
-- Advances the timing checklist item without changing gameplay loop behavior.
-- Prepares for platform-specific timing implementations (desktop/web) with one call path.
+- Keeps timing collection behind the platform abstraction seam.
+- Makes startup and shutdown timing externally observable without adding new runtime dependencies.
+- Provides stable markers for future desktop/web parity checks.
 
 ## Next wiring step
 
-- Expose startup timing marker to baseline docs/log collection workflow.
-- Begin routing selected input/window startup interactions through interfaces.
+- Route one gameplay-path timing read through `IClock` rather than only startup/teardown markers.
+- Add a future per-frame timing seam once rendering migration starts.
+
+## Guardrail update
+
+- Added `tools/validation/clock_seam_guard.py` to enforce timing marker presence and startup duration derivation contract.
