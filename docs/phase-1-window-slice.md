@@ -7,8 +7,6 @@
 - Routed startup-level interface seams through abstractions:
   - `IWindow::SetTitle(...)`
   - `IWindow::SetCursorVisible(...)`
-  - `IWindow::SetFullscreen(...)`
-  - `IWindow::GetSize(...)` mapped into `LawnApp::mWidth/mHeight`
   - `IInput::IsKeyDown(...)` marker call
 
 ## Why this matters
@@ -19,5 +17,5 @@
 
 ## Next wiring step
 
-- Route additional mode decisions through `IWindow` as they are migrated from legacy startup paths.
-- Replace one real startup-adjacent input touchpoint with `IInput` (beyond marker call).
+- Route fullscreen/window mode decisions through `IWindow`.
+- Replace one real startup-adjacent input touchpoint with `IInput`.
