@@ -142,16 +142,4 @@ Track this list while working through Phases 1–3:
 
 This project does not include proprietary PopCap game assets. You must own the original game files and provide assets locally for runtime/testing.
 
-## Prioritized suggestions (current relevance)
-
-Decision: execute **all** of the following, in this order.
-
-1. **Complete remaining Phase 0 runtime baseline capture**
-   Record startup/title/one-level baseline notes so migration regressions can be measured objectively.
-2. **Migrate a narrow startup slice first (entrypoint + clock + window shell)**
-   Keep gameplay untouched while proving interface wiring in one safe path.
-3. **Target highest WinAPI hotspot early (`SexyAppFramework/SexyAppBase.cpp`)**
-   Reduce `HWND` coupling where it is currently most concentrated.
-4. **Add lightweight adapter validation as wiring proceeds**
-   Add small compile/runtime checks per adapter to avoid dead abstractions.
 
