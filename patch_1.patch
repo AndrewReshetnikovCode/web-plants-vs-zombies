@@ -1,8 +1,8 @@
 diff --git a/README.md b/README.md
-index 84479824fe33c4f0eddaf3b05e0db4d0e7b31b05..ba84380e14285a5c381d5572b601a696e4a28eeb 100644
+index 84479824fe33c4f0eddaf3b05e0db4d0e7b31b05..e32d8de37d754fe6577f5ac2590e9f3747cf4d4b 100644
 --- a/README.md
 +++ b/README.md
-@@ -1,95 +1,155 @@
+@@ -1,95 +1,156 @@
 +# web-plants-vs-zombies
 +
 +This repository starts from the existing PvZ decompilation/modernization codebase and tracks the migration path toward a browser-playable web version.
@@ -66,6 +66,7 @@ index 84479824fe33c4f0eddaf3b05e0db4d0e7b31b05..ba84380e14285a5c381d5572b601a696
 +- ✅ Phase 0 dependency inventory and baseline metric definitions are documented in `docs/phase-0-baseline.md`.
 +- ✅ Added repeatable inventory script: `tools/validation/winapi_inventory.sh`.
 +- ✅ Added runtime baseline capture template: `docs/phase-0-runtime-baseline.md`.
++- ✅ Extracted startup sequence into `app/LawnAppRunner.cpp` and injected `IFileSystem` into startup path.
  
 -The SexyAppFramework dating as back as 2005 is a very old game engine and it does not follow proper C++ conventions as per modern standards nor does it use a modern renderer backend
 +## Migration tracker (phases + milestones)
@@ -90,7 +91,7 @@ index 84479824fe33c4f0eddaf3b05e0db4d0e7b31b05..ba84380e14285a5c381d5572b601a696
 -## Roadmap
 +- [x] Create interface contracts in `platform/interfaces` (`IWindow`, `IInput`, `IClock`, `IFileSystem`, `IAudio`).
 +- [x] Add initial desktop implementations in `platform/desktop` for incremental integration.
-+- [ ] Replace direct WinAPI calls in migrated pathways with interface calls.
++- [ ] Replace direct WinAPI calls in migrated pathways with interface calls. (Partial: startup path now routes resource probe through `IFileSystem`.)
 +- [ ] Keep desktop behavior functional through the new adapters.
  
 -#### Currently focused on
@@ -223,6 +224,130 @@ index 84479824fe33c4f0eddaf3b05e0db4d0e7b31b05..ba84380e14285a5c381d5572b601a696
 -- The GLFW team for their amazing work
 -- PopCap for creating the amazing PvZ franchise (and making their game engine public)
 -- All the contributors which have worked or are actively working in this amazing project
+diff --git a/SexyAppFramework/CMakeLists.txt b/SexyAppFramework/CMakeLists.txt
+index 6f99cd9966d5004353f6ab2e2e1938c0bfedae77..7952dcdeab837dee6512ff129bde5e19229775de 100644
+--- a/SexyAppFramework/CMakeLists.txt
++++ b/SexyAppFramework/CMakeLists.txt
+@@ -191,50 +191,53 @@ if(MSVC)
+     add_executable(${PROJECT_NAME} WIN32 ${ALL_FILES})
+ else()
+     add_executable(${PROJECT_NAME} ${ALL_FILES})
+ endif()
+ 
+ add_subdirectory(graphics)
+ add_subdirectory(sound)
+ add_subdirectory(widget)
+ add_subdirectory(misc)
+ add_subdirectory(paklib)
+ add_subdirectory(ogg)
+ add_subdirectory(imagelib)
+ 
+ target_sources(${PROJECT_NAME} PRIVATE
+     "Common.h"
+     "Common.cpp"
+     "SexyApp.cpp"
+     "SexyApp.h"
+     "SexyAppBase.cpp"
+     "SexyAppBase.h"
+ 
+     # No group sources
+     "../Cursor13.cur"
+     "../LawnApp.cpp"
+     "../LawnApp.h"
++    "../app/LawnAppRunner.h"
++    "../app/LawnAppRunner.cpp"
++    "../app/LawnGlobals.h"
+     "../main.cpp"
+     ".gitattributes"
+     ".gitignore"
+     "resource.h"
+     "LawnProject.rc"
+ )
+ 
+ use_props(${PROJECT_NAME} "${CMAKE_CONFIGURATION_TYPES}" "${DEFAULT_CXX_PROPS}")
+ set(ROOT_NAMESPACE SexyAppBase)
+ 
+ ################################################################################
+ # Target name
+ ################################################################################
+ set_target_properties(${PROJECT_NAME} PROPERTIES
+     TARGET_NAME_DEBUG            "SexyAppFramework"
+     TARGET_NAME_RELEASE          "SexyAppFramework"
+ )
+ ################################################################################
+ # Output directory
+ ################################################################################
+ set_target_properties(${PROJECT_NAME} PROPERTIES
+     OUTPUT_DIRECTORY_DEBUG            "${CMAKE_BINARY_DIR}/"
+     OUTPUT_DIRECTORY_RELEASE          "${CMAKE_BINARY_DIR}/"
+ )
+ 
+diff --git a/app/LawnAppRunner.cpp b/app/LawnAppRunner.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..b359f49d61198af8292f3a2f4f9f4e422380cade
+--- /dev/null
++++ b/app/LawnAppRunner.cpp
+@@ -0,0 +1,32 @@
++#include "LawnAppRunner.h"
++#include "LawnGlobals.h"
++
++#include "LawnApp.h"
++#include "Resources.h"
++#include "Sexy.TodLib/TodStringFile.h"
++
++using namespace Sexy;
++
++namespace pvz::app {
++
++int RunLawnApp(platform::IFileSystem& fileSystem)
++{
++    TodStringListSetColors(gLawnStringFormats, gLawnStringFormatCount);
++    gGetCurrentLevelName = LawnGetCurrentLevelName;
++    gAppCloseRequest = LawnGetCloseRequest;
++    gAppHasUsedCheatKeys = LawnHasUsedCheatKeys;
++    gExtractResourcesByName = Sexy::ExtractResourcesByName;
++
++    gLawnApp = new LawnApp();
++    gLawnApp->mChangeDirTo = (!fileSystem.Exists("properties\\resources.xml") && fileSystem.Exists("..\\properties\\resources.xml")) ? ".." : ".";
++    gLawnApp->Init();
++    gLawnApp->Start();
++    gLawnApp->Shutdown();
++
++    if (gLawnApp)
++        delete gLawnApp;
++
++    return 0;
++}
++
++} // namespace pvz::app
+diff --git a/app/LawnAppRunner.h b/app/LawnAppRunner.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..42b2a7c598d36a02dd6d255ac2b60562d936ebcf
+--- /dev/null
++++ b/app/LawnAppRunner.h
+@@ -0,0 +1,9 @@
++#pragma once
++
++#include "platform/interfaces/IFileSystem.h"
++
++namespace pvz::app {
++
++int RunLawnApp(platform::IFileSystem& fileSystem);
++
++} // namespace pvz::app
+diff --git a/app/LawnGlobals.h b/app/LawnGlobals.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..d697269b6ac21e03ea561349a701df7401957fc9
+--- /dev/null
++++ b/app/LawnGlobals.h
+@@ -0,0 +1,7 @@
++#pragma once
++
++#include "SexyAppFramework/SexyString.h"
++
++extern bool (*gAppCloseRequest)();
++extern bool (*gAppHasUsedCheatKeys)();
++extern Sexy::SexyString (*gGetCurrentLevelName)();
 diff --git a/cmake/TargetsWeb.cmake b/cmake/TargetsWeb.cmake
 new file mode 100644
 index 0000000000000000000000000000000000000000..063f0b5c2a1a33bd185aa902c379e29e30faaeca
@@ -342,6 +467,66 @@ index 0000000000000000000000000000000000000000..8307eb3c4ffd2619fb24491db46abf5f
 +## Follow-up
 +
 +After this document is filled with actual runtime measurements, mark Phase 0 runtime baseline item complete in `README.md`.
+diff --git a/docs/phase-1-startup-slice.md b/docs/phase-1-startup-slice.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..79fe5e2a41e8101a41eda9a1881aef835903cf7b
+--- /dev/null
++++ b/docs/phase-1-startup-slice.md
+@@ -0,0 +1,16 @@
++# Phase 1 Startup Slice
++
++## What was migrated
++
++This slice extracts the startup sequence from `WinMain` into `app/LawnAppRunner.cpp` and routes the initial resource-path probe through `platform::IFileSystem`.
++
++## Why this matters
++
++- Keeps behavior intact while introducing a platform seam.
++- Reduces direct startup coupling to legacy static file helpers.
++- Prepares for a future portable `main()` / web runner without touching gameplay loop internals.
++
++## Next wiring step
++
++- Keep `WinMain` as a thin shell.
++- Introduce a non-Win32 entrypoint wrapper that calls the same `RunLawnApp(...)` function.
+diff --git a/main.cpp b/main.cpp
+index bb38d0ba6e524319213723456d067efd2629b94c..10ffa78816ed37a9f1a49d72fe553fa516e77a14 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -1,27 +1,19 @@
+ #include "LawnApp.h"
+ #include "Resources.h"
+ #include "Sexy.TodLib/TodStringFile.h"
++#include "app/LawnAppRunner.h"
++#include "app/LawnGlobals.h"
++#include "platform/desktop/DesktopFileSystemAdapter.h"
++
+ using namespace Sexy;
+ 
+ bool (*gAppCloseRequest)();				//[0x69E6A0]
+ bool (*gAppHasUsedCheatKeys)();			//[0x69E6A4]
+ SexyString (*gGetCurrentLevelName)();
+ 
+ //0x44E8F0
+ int WINAPI WinMain(_In_ HINSTANCE /* hInstance */, _In_opt_ HINSTANCE /* hPrevInstance */, _In_ LPSTR /* lpCmdLine */, _In_ int /* nCmdShow */)
+ {
+-	TodStringListSetColors(gLawnStringFormats, gLawnStringFormatCount);
+-	gGetCurrentLevelName = LawnGetCurrentLevelName;
+-	gAppCloseRequest = LawnGetCloseRequest;
+-	gAppHasUsedCheatKeys = LawnHasUsedCheatKeys;
+-	gExtractResourcesByName = Sexy::ExtractResourcesByName;
+-	gLawnApp = new LawnApp();
+-	gLawnApp->mChangeDirTo = (!Sexy::FileExists("properties\\resources.xml") && Sexy::FileExists("..\\properties\\resources.xml")) ? ".." : ".";
+-	gLawnApp->Init();
+-	gLawnApp->Start();
+-	gLawnApp->Shutdown();
+-	if (gLawnApp)
+-		delete gLawnApp;
+-
+-	return 0;
++	pvz::platform::desktop::DesktopFileSystemAdapter fileSystem;
++	return pvz::app::RunLawnApp(fileSystem);
+ };
 diff --git a/platform/desktop/DesktopAudioAdapter.cpp b/platform/desktop/DesktopAudioAdapter.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..adc857d6aa07480d5b6993606a9c846ca2e6a14f
